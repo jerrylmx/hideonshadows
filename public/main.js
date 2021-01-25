@@ -35,7 +35,7 @@ class Intro extends Phaser.Scene {
         this.cd2Full= data.cd2;
 
         window.entities = {};
-        this.baseContainer.setMask(new Phaser.Display.Masks.BitmapMask(this, this.rt));
+        // this.baseContainer.setMask(new Phaser.Display.Masks.BitmapMask(this, this.rt));
         this.meData = data.me;
         this.fmanager = new FrameManager({rate: data.rate});
         this.dmanager = new Diff(data.entities);
@@ -286,20 +286,20 @@ class Intro extends Phaser.Scene {
         this.background.y = this.me.body.y;
 
         // Cast shadows
-        this.rt.clear();
-        this.rt.x = this.me.data.x - window.innerWidth/2;
-        this.rt.y = this.me.data.y - window.innerHeight/2;
+        // this.rt.clear();
+        // this.rt.x = this.me.data.x - window.innerWidth/2;
+        // this.rt.y = this.me.data.y - window.innerHeight/2;
 
-        // Soft Shadow
-        // for (let i = -20; i <= 20; i+=10) {
-        //     for (let j = -20; j <= 20; j+=10) {
-        //         let g = this.makeMask({x: this.me.data.x+i, y: this.me.data.y+j});
-        //         this.rt.draw(g, -this.me.data.x + window.innerWidth/2, -this.me.data.y + window.innerHeight/2);
-        //     }
-        // }
+        // // Soft Shadow
+        // // for (let i = -20; i <= 20; i+=10) {
+        // //     for (let j = -20; j <= 20; j+=10) {
+        // //         let g = this.makeMask({x: this.me.data.x+i, y: this.me.data.y+j});
+        // //         this.rt.draw(g, -this.me.data.x + window.innerWidth/2, -this.me.data.y + window.innerHeight/2);
+        // //     }
+        // // }
 
-        let g = this.makeMask({x: this.me.data.x, y: this.me.data.y});
-        this.rt.draw(g, -this.me.data.x + window.innerWidth/2, -this.me.data.y + window.innerHeight/2);
+        // let g = this.makeMask({x: this.me.data.x, y: this.me.data.y});
+        // this.rt.draw(g, -this.me.data.x + window.innerWidth/2, -this.me.data.y + window.innerHeight/2);
 
         // Update GUI
         let pct1 = (100 - (100* Math.max(this.me.data.data.cd1, 0) / this.cd1Full)).toFixed(0) + '%';
