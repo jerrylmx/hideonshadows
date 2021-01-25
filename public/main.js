@@ -22,9 +22,9 @@ class Intro extends Phaser.Scene {
     create (data) {
         this.entities = {};
         this.baseContainer = this.add.container(0, 0);
-        this.background = this.add.tileSprite(0, 0,  window.innerWidth, window.innerHeight, 'bg');
+        //this.background = this.add.tileSprite(0, 0,  window.innerWidth, window.innerHeight, 'bg');
         this.rt = this.make.renderTexture({width: window.innerWidth, height: window.innerHeight, add: false});
-        this.baseContainer.add([this.background]);
+        //this.baseContainer.add([this.background]);
         this.meData = null;
         this.fmanager = null;
         this.dmanager = null;
@@ -280,10 +280,10 @@ class Intro extends Phaser.Scene {
         });
 
         // Move background
-        this.background.tilePositionX = this.me.body.x;
-        this.background.tilePositionY = this.me.body.y;
-        this.background.x = this.me.body.x;
-        this.background.y = this.me.body.y;
+        // this.background.tilePositionX = this.me.body.x;
+        // this.background.tilePositionY = this.me.body.y;
+        // this.background.x = this.me.body.x;
+        // this.background.y = this.me.body.y;
 
         // Cast shadows
         // this.rt.clear();
