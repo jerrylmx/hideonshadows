@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <script src="./lib/socket.io.js"></script>
+    <!-- <script src="./lib/phaser.min.js"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.52.0/dist/phaser.min.js"></script>
+    <script src="./lib/diff.js"></script>
+    <script src="./lib/frame.js"></script>
+    <script src="./bulletRender.js"></script>
+    <script src="./polygonRender.js"></script>
+    <script src="./playerRender.js"></script>
+    <script src="./main.js"></script>
+    <meta charset="UTF-8">
+    <title>Hide on shadow</title>
+</head>
+<body>
+    <div id="game"></div>
+
+    <!--game prompt-->
+    <div id="container">
+        <div class="row">
+        </div>
+        <div class="row">
+            <div class="col-sm-9">
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="name" class="sr-only">Player name:</label>
+                    <input class="form-control" id="name" placeholder="Your name here..">
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <button class="btn btn-primary" id="join" style="max-width: 100%">Join</button>
+            </div>
+        </div>
+        <div class="row pt-2">
+            <div class="col-sm-12">
+                <div class="instruction">
+                    <h5 style="text-align: center;">Instructions</h5>
+                    <ul>
+                        <li>Move with mouse pointer</li>
+                        <li>Left-click to fire</li>
+                        <li>Right-click to sprint</li>
+                        <li>Press 'S' to stop</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="float: right">
+            <div class="signal">0ms</div>
+        </div>
+    </div>
+
+</body>
+</html>
