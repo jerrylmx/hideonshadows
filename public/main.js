@@ -136,22 +136,22 @@ class Intro extends Phaser.Scene {
 
         // Controls
         let that = this;
-        this.input.on('pointermove', function (event) {
-            that.pointerPosition = {x: event.worldX, y: event.worldY};
+        // this.input.on('pointermove', function (event) {
+        //     that.pointerPosition = {x: event.worldX, y: event.worldY};
 
-            if (!that.me) return;
-            let dir = new Phaser.Math.Vector2(event.worldX - that.me.body.x, event.worldY - that.me.body.y).normalize();
-            let angle = Math.atan2(dir.y, dir.x) * 180 / Math.PI + 90;
-            that.me.probe.angle = angle;
+        //     if (!that.me) return;
+        //     let dir = new Phaser.Math.Vector2(event.worldX - that.me.body.x, event.worldY - that.me.body.y).normalize();
+        //     let angle = Math.atan2(dir.y, dir.x) * 180 / Math.PI + 90;
+        //     that.me.probe.angle = angle;
 
-            // Limit pointer move request
-            if (that.pointerLocked) return;
-            socket.emit("DIRECT", { id: that.meData.id, direction: dir, rotation: angle });
-            that.pointerLocked = true;
-            setTimeout(function () {
-                this.pointerLocked = false;
-            }.bind(that), 100);
-        });
+        //     // Limit pointer move request
+        //     if (that.pointerLocked) return;
+        //     socket.emit("DIRECT", { id: that.meData.id, direction: dir, rotation: angle });
+        //     that.pointerLocked = true;
+        //     setTimeout(function () {
+        //         this.pointerLocked = false;
+        //     }.bind(that), 100);
+        // });
 
         this.input.keyboard.on('keydown-' + 'S', function (event) {
             if (that.stopped) return;
@@ -216,7 +216,7 @@ class Intro extends Phaser.Scene {
         knob.setAlpha(0.9);
         knob.setOrigin(0.5);
         knob.setScale(0.5);
-        var joystick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
+        this.joystick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
             x: window.innerWidth*0.8,
             y: window.innerHeight*0.8,
             radius: 100,
@@ -226,6 +226,23 @@ class Intro extends Phaser.Scene {
             // forceMin: 16,
             // fixed: true,
             enable: true
+        });
+
+        this.joystick.on('update', function(){
+            let angle = that.joystick.angle - 90;
+            console.log(angle);
+            let dir = {x: 0, y: 1};
+            dir = mRot(angle * Math.PI/180, dir);
+            that.me.probe.angle = angle;
+
+            // Limit pointer move request
+            if (that.pointerLocked) return;
+            socket.emit("DIRECT", { id: that.meData.id, direction: dir, rotation: angle });
+            that.pointerLocked = true;
+            setTimeout(function () {
+                that.pointerLocked = false;
+            }.bind(that), 100);
+
         });
 
     }
@@ -273,12 +290,16 @@ class Intro extends Phaser.Scene {
         this.rt.x = this.me.data.x - window.innerWidth/2;
         this.rt.y = this.me.data.y - window.innerHeight/2;
 
-        for (let i = -20; i <= 20; i+=10) {
-            for (let j = -20; j <= 20; j+=10) {
-                let g = this.makeMask({x: this.me.data.x+i, y: this.me.data.y+j});
-                this.rt.draw(g, -this.me.data.x + window.innerWidth/2, -this.me.data.y + window.innerHeight/2);
-            }
-        }
+        // Soft Shadow
+        // for (let i = -20; i <= 20; i+=10) {
+        //     for (let j = -20; j <= 20; j+=10) {
+        //         let g = this.makeMask({x: this.me.data.x+i, y: this.me.data.y+j});
+        //         this.rt.draw(g, -this.me.data.x + window.innerWidth/2, -this.me.data.y + window.innerHeight/2);
+        //     }
+        // }
+
+        let g = this.makeMask({x: this.me.data.x, y: this.me.data.y});
+        this.rt.draw(g, -this.me.data.x + window.innerWidth/2, -this.me.data.y + window.innerHeight/2);
 
         // Update GUI
         let pct1 = (100 - (100* Math.max(this.me.data.data.cd1, 0) / this.cd1Full)).toFixed(0) + '%';
