@@ -13,7 +13,10 @@ class Intro extends Phaser.Scene {
         this.load.image('bullet', './assets/bullet.png');
         this.load.image('cd1', './assets/cd1.png');
         this.load.image('cd2', './assets/cd2.png');
+        this.load.image('base', './assets/base.png');
+        this.load.image('knob', './assets/knob.png');
         this.load.atlas('flares', './assets/particles/flares.png', './assets/particles/flares.json');
+        this.load.plugin('rexvirtualjoystickplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexvirtualjoystickplugin.min.js', true);
     }
 
     create (data) {
@@ -159,16 +162,16 @@ class Intro extends Phaser.Scene {
             socket.emit("STOP", { id: that.meData.id, stop: false});
             that.stopped = false;
         });
-        this.input.on('pointerdown', function(pointer){
-            if (pointer.rightButtonDown()) {
-                socket.emit("JUMP", { id: that.meData.id});
-            } else {
-                socket.emit("FIRE", { id: that.meData.id});
-            }
-        });
+        // this.input.on('pointerdown', function(pointer){
+        //     if (pointer.rightButtonDown()) {
+        //         socket.emit("JUMP", { id: that.meData.id});
+        //     } else {
+        //         socket.emit("FIRE", { id: that.meData.id});
+        //     }
+        // });
 
         // Display
-        this.cd1 = this.add.image(window.innerWidth*0.1, window.innerHeight*0.9, 'cd1');
+        this.cd1 = this.add.sprite(window.innerWidth*0.1, window.innerHeight*0.9, 'cd1');
         this.cd1.setAlpha(0.2);
         this.cd1.setOrigin(0.5);
         this.cd1.setDepth(100);
@@ -182,14 +185,17 @@ class Intro extends Phaser.Scene {
         this.cd1text.setAlpha(0.8);
         this.cd1text.setOrigin(0.5);
         this.cd1text.setScrollFactor(0,0);
+        this.cd1.setInteractive().on('pointerdown', function(){
+            socket.emit("FIRE", { id: that.meData.id});
+        }, this)
 
-        this.cd2 = this.add.image(window.innerWidth*0.17, window.innerHeight*0.9, 'cd2');
+        this.cd2 = this.add.sprite(window.innerWidth*0.25, window.innerHeight*0.9, 'cd2');
         this.cd2.setAlpha(0.2);
         this.cd2.setOrigin(0.5);
         this.cd2.setDepth(100);
         this.cd2.setScrollFactor(0,0);
         this.cd2.setScale(0.1);
-        this.cd2text = this.add.text(window.innerWidth*0.17, window.innerHeight*0.95, "0%", {
+        this.cd2text = this.add.text(window.innerWidth*0.25, window.innerHeight*0.95, "0%", {
             fontFamily: '"Verdana"',
             fontSize: "24px",
             strokeThickness: 1
@@ -197,6 +203,31 @@ class Intro extends Phaser.Scene {
         this.cd2text.setAlpha(0.8);
         this.cd2text.setOrigin(0.5);
         this.cd2text.setScrollFactor(0,0);
+        this.cd2.setInteractive().on('pointerdown', function(){
+            socket.emit("JUMP", { id: that.meData.id});
+        }, this)
+
+
+        let base = this.add.image(0,0, 'base');
+        base.setAlpha(0.2);
+        base.setOrigin(0.5);
+        base.setScale(0.5);
+        let knob = this.add.image(0,0, 'knob');
+        knob.setAlpha(0.9);
+        knob.setOrigin(0.5);
+        knob.setScale(0.5);
+        var joystick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
+            x: window.innerWidth*0.8,
+            y: window.innerHeight*0.8,
+            radius: 100,
+            base: base,
+            thumb: knob,
+            // dir: '8dir',
+            // forceMin: 16,
+            // fixed: true,
+            enable: true
+        });
+
     }
 
     makeMask = (source) => {
@@ -347,7 +378,7 @@ const config = {
     // pixelArt: true,
     scene: [GameScenePrompt, Intro],
     parent: "game",
-    antialias: true
+    // antialias: true
 };
 const game = new Phaser.Game(config);
 document.addEventListener('contextmenu', event => event.preventDefault());
