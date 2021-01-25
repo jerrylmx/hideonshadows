@@ -55,7 +55,6 @@ class Intro extends Phaser.Scene {
         this.cameras.main.startFollow(this.me.body);
 
         socket.on("SYNC", (data) => {
-            console.log(data);
             if (!this.meData || !this.fmanager || !this.dmanager) return;
             this.fmanager.push(data.entities);
             this.dmanager.refresh(data.entities);
@@ -588,21 +587,3 @@ function vRound(v) {
     let vy = Math.round((v.y + Number.EPSILON) * 1000) / 1000;
     return {x: vx, y: vy}
 }
-
-
-let a = lineSegLineSegIntersect(
-    {x: 1075.0217059363192, y: 399.35195481828566},
-    {x: 1195.9873374598942, y: 801.2297298757023},
-    {x: 1000, y: 500},
-    {x: 1300, y: 500},
-)
-
-let b = lineSegLineSegIntersect(
-    {x: 1075.0217059363192, y: 399.35195481828566},
-    {x: 3957.2935314856195, y: 9974.972515578027},
-    {x: 1000, y: 500},
-    {x: 1300, y: 500},
-)
-
-console.log(a);
-console.log(b);
