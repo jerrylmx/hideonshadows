@@ -21,9 +21,10 @@ class Intro extends Phaser.Scene {
 
     create (data) {
         this.entities = {};
-        this.baseContainer = this.add.container(0, 0);
+        this.baseContainer = this.make.container(0, 0);
         //this.background = this.add.tileSprite(0, 0,  window.innerWidth, window.innerHeight, 'bg');
         this.rt = this.make.renderTexture({width: window.innerWidth, height: window.innerHeight, add: false});
+        this.rt.tint = 0x123456;
         //this.baseContainer.add([this.background]);
         this.meData = null;
         this.fmanager = null;
@@ -34,8 +35,13 @@ class Intro extends Phaser.Scene {
         this.cd1Full = data.cd1;
         this.cd2Full= data.cd2;
 
+
+        let rect = this.add.rectangle(1000, 1000, 2000, 2000, 0x8cb8ff);
+        this.baseContainer.add([rect]);
+
         window.entities = {};
-        // this.baseContainer.setMask(new Phaser.Display.Masks.BitmapMask(this, this.rt));
+        this.baseContainer.setMask(new Phaser.Display.Masks.BitmapMask(this, this.rt));
+        this.baseContainer.depth = 1;
         this.meData = data.me;
         this.fmanager = new FrameManager({rate: data.rate});
         this.dmanager = new Diff(data.entities);
@@ -50,7 +56,7 @@ class Intro extends Phaser.Scene {
             }
         }
 
-        // Add player sprite
+        // Cameras
         this.me = this.entities[this.meData.id];
         this.cameras.main.setBounds(-2000, -2000, 8000, 8000);
         this.cameras.main.setZoom(0.7);
@@ -184,15 +190,20 @@ class Intro extends Phaser.Scene {
         });
         this.cd1text.setAlpha(0.8);
         this.cd1text.setOrigin(0.5);
+        this.cd1text.setDepth(111);
         this.cd1text.setScrollFactor(0,0);
         this.cd1.setInteractive().on('pointerdown', function(){
             socket.emit("FIRE", { id: that.meData.id});
         }, this)
+        this.cd1.setInteractive().on('pointerover', function(e, pointer){
+            if (pointer.isDown) socket.emit("FIRE", { id: that.meData.id});
+        }, this);
+        this.cd1text.blendMode = Phaser.BlendModes.NORMAL;
 
         this.cd2 = this.add.sprite(window.innerWidth*0.25, window.innerHeight*0.9, 'cd2');
         this.cd2.setAlpha(0.2);
         this.cd2.setOrigin(0.5);
-        this.cd2.setDepth(100);
+        this.cd2.setDepth(1);
         this.cd2.setScrollFactor(0,0);
         this.cd2.setScale(0.1);
         this.cd2text = this.add.text(window.innerWidth*0.25, window.innerHeight*0.95, "0%", {
@@ -202,11 +213,14 @@ class Intro extends Phaser.Scene {
         });
         this.cd2text.setAlpha(0.8);
         this.cd2text.setOrigin(0.5);
+        this.cd2text.setDepth(111);
         this.cd2text.setScrollFactor(0,0);
         this.cd2.setInteractive().on('pointerdown', function(){
             socket.emit("JUMP", { id: that.meData.id});
+        }, this);
+        this.cd2.setInteractive().on('pointerover', function(e, pointer){
+            if (pointer.isDown) socket.emit("JUMP", { id: that.meData.id});
         }, this)
-
 
         let base = this.add.image(0,0, 'base');
         base.setAlpha(0.2);
@@ -286,9 +300,9 @@ class Intro extends Phaser.Scene {
         // this.background.y = this.me.body.y;
 
         // Cast shadows
-        // this.rt.clear();
-        // this.rt.x = this.me.data.x - window.innerWidth/2;
-        // this.rt.y = this.me.data.y - window.innerHeight/2;
+        this.rt.clear();
+        this.rt.x = this.me.data.x - window.innerWidth/2;
+        this.rt.y = this.me.data.y - window.innerHeight/2;
 
         // // Soft Shadow
         // // for (let i = -20; i <= 20; i+=10) {
@@ -298,8 +312,8 @@ class Intro extends Phaser.Scene {
         // //     }
         // // }
 
-        // let g = this.makeMask({x: this.me.data.x, y: this.me.data.y});
-        // this.rt.draw(g, -this.me.data.x + window.innerWidth/2, -this.me.data.y + window.innerHeight/2);
+        let g = this.makeMask({x: this.me.data.x, y: this.me.data.y});
+        this.rt.draw(g, -this.me.data.x + window.innerWidth/2, -this.me.data.y + window.innerHeight/2);
 
         // Update GUI
         let pct1 = (100 - (100* Math.max(this.me.data.data.cd1, 0) / this.cd1Full)).toFixed(0) + '%';

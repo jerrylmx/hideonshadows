@@ -5,7 +5,7 @@ class PlayerBaseRender {
       this.body = scene.add.container(data.x, data.y);
       this.probe = scene.add.sprite(0, 0, 'ufo');
       this.probe.name = data.id;
-      this.probe.depth = 1;
+      this.probe.depth = 10;
       this.probe.setScale(0.5);
 
       this.particles = scene.add.particles('flares');
