@@ -156,7 +156,7 @@ io.on('connection', (socket) => {
                 }
             });
             engine.addEntity(geom);
-            engine.applyForce(geom, Util.vMul(dir, 7000));
+            engine.applyForce(geom, Util.vMul(dir, 5000));
         }
     });
 
