@@ -222,42 +222,44 @@ class Intro extends Phaser.Scene {
             if (pointer.isDown) socket.emit("JUMP", { id: that.meData.id});
         }, this)
 
-        let base = this.add.image(0,0, 'base');
-        base.setAlpha(0.2);
-        base.setOrigin(0.5);
-        base.setScale(0.5);
-        let knob = this.add.image(0,0, 'knob');
-        knob.setAlpha(0.9);
-        knob.setOrigin(0.5);
-        knob.setScale(0.5);
-        this.joystick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
-            x: window.innerWidth*0.8,
-            y: window.innerHeight*0.8,
-            radius: 100,
-            base: base,
-            thumb: knob,
-            // dir: '8dir',
-            // forceMin: 16,
-            // fixed: true,
-            enable: true
-        });
 
-        this.joystick.on('update', function(){
-            let angle = that.joystick.angle - 90;
-            console.log(angle);
-            let dir = {x: 0, y: 1};
-            dir = mRot(angle * Math.PI/180, dir);
-            that.me.probe.angle = angle;
+        if (isTouchDevice()) {
+            let base = this.add.image(0,0, 'base');
+            base.setAlpha(0.2);
+            base.setOrigin(0.5);
+            base.setScale(0.5);
+            base.setDepth(111);
+            let knob = this.add.image(0,0, 'knob');
+            knob.setAlpha(0.9);
+            knob.setOrigin(0.5);
+            knob.setScale(0.5);
+            knob.setDepth(111);
+            this.joystick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
+                x: window.innerWidth*0.8,
+                y: window.innerHeight*0.8,
+                radius: 100,
+                base: base,
+                thumb: knob,
+                forceMin: 5,
+                enable: true
+            });
+            this.joystick.on('update', function(){
+                let angle = that.joystick.angle - 90;
+                console.log(angle);
+                let dir = {x: 0, y: 1};
+                dir = mRot(angle * Math.PI/180, dir);
+                that.me.probe.angle = angle;
+    
+                // Limit pointer move request
+                if (that.pointerLocked) return;
+                socket.emit("DIRECT", { id: that.meData.id, direction: dir, rotation: angle });
+                that.pointerLocked = true;
+                setTimeout(function () {
+                    that.pointerLocked = false;
+                }.bind(that), 100);
+            });
+        }
 
-            // Limit pointer move request
-            if (that.pointerLocked) return;
-            socket.emit("DIRECT", { id: that.meData.id, direction: dir, rotation: angle });
-            that.pointerLocked = true;
-            setTimeout(function () {
-                that.pointerLocked = false;
-            }.bind(that), 100);
-
-        });
 
     }
 
@@ -416,6 +418,9 @@ const config = {
     // antialias: true
 };
 const game = new Phaser.Game(config);
+game.input.addPointer();
+game.input.addPointer();
+game.input.addPointer();
 document.addEventListener('contextmenu', event => event.preventDefault());
 
 function makeSightPolygon(me, entities) {
@@ -653,3 +658,11 @@ function vRound(v) {
     let vy = Math.round((v.y + Number.EPSILON) * 1000) / 1000;
     return {x: vx, y: vy}
 }
+
+function isTouchDevice() {
+return (('ontouchstart' in window) ||
+    (navigator.maxTouchPoints > 0) ||
+    (navigator.msMaxTouchPoints > 0));
+}
+
+alert(isTouchDevice());
