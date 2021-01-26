@@ -13,6 +13,7 @@ class Intro extends Phaser.Scene {
         this.load.image('bullet', './assets/bullet.png');
         this.load.image('cd1', './assets/cd1.png');
         this.load.image('cd2', './assets/cd2.png');
+        this.load.image('trophy', './assets/trophy.png');
         this.load.image('base', './assets/base.png');
         this.load.image('knob', './assets/knob.png');
         this.load.atlas('flares', './assets/particles/flares.png', './assets/particles/flares.json');
@@ -36,7 +37,7 @@ class Intro extends Phaser.Scene {
         this.cd2Full= data.cd2;
 
 
-        let rect = this.add.rectangle(1000, 1000, 2000, 2000, 0x8cb8ff);
+        let rect = this.add.rectangle(1000, 1000, 2000, 2000, 0x273b44);
         this.baseContainer.add([rect]);
 
         window.entities = {};
@@ -142,23 +143,6 @@ class Intro extends Phaser.Scene {
 
         // Controls
         let that = this;
-        // this.input.on('pointermove', function (event) {
-        //     that.pointerPosition = {x: event.worldX, y: event.worldY};
-
-        //     if (!that.me) return;
-        //     let dir = new Phaser.Math.Vector2(event.worldX - that.me.body.x, event.worldY - that.me.body.y).normalize();
-        //     let angle = Math.atan2(dir.y, dir.x) * 180 / Math.PI + 90;
-        //     that.me.probe.angle = angle;
-
-        //     // Limit pointer move request
-        //     if (that.pointerLocked) return;
-        //     socket.emit("DIRECT", { id: that.meData.id, direction: dir, rotation: angle });
-        //     that.pointerLocked = true;
-        //     setTimeout(function () {
-        //         this.pointerLocked = false;
-        //     }.bind(that), 100);
-        // });
-
         this.input.keyboard.on('keydown-' + 'S', function (event) {
             if (that.stopped) return;
             socket.emit("STOP", { id: that.meData.id, stop: true });
@@ -168,13 +152,7 @@ class Intro extends Phaser.Scene {
             socket.emit("STOP", { id: that.meData.id, stop: false});
             that.stopped = false;
         });
-        // this.input.on('pointerdown', function(pointer){
-        //     if (pointer.rightButtonDown()) {
-        //         socket.emit("JUMP", { id: that.meData.id});
-        //     } else {
-        //         socket.emit("FIRE", { id: that.meData.id});
-        //     }
-        // });
+
 
         // Display
         this.cd1 = this.add.sprite(window.innerWidth*0.1, window.innerHeight*0.9, 'cd1');
@@ -182,7 +160,7 @@ class Intro extends Phaser.Scene {
         this.cd1.setOrigin(0.5);
         this.cd1.setDepth(100);
         this.cd1.setScrollFactor(0,0);
-        this.cd1.setScale(0.1);
+        this.cd1.setScale(0.4);
         this.cd1text = this.add.text(window.innerWidth*0.1, window.innerHeight*0.95, "0%", {
             fontFamily: '"Verdana"',
             fontSize: "24px",
@@ -200,13 +178,13 @@ class Intro extends Phaser.Scene {
         }, this);
         this.cd1text.blendMode = Phaser.BlendModes.NORMAL;
 
-        this.cd2 = this.add.sprite(window.innerWidth*0.25, window.innerHeight*0.9, 'cd2');
+        this.cd2 = this.add.sprite(window.innerWidth*0.1+150, window.innerHeight*0.9, 'cd2');
         this.cd2.setAlpha(0.2);
         this.cd2.setOrigin(0.5);
         this.cd2.setDepth(1);
         this.cd2.setScrollFactor(0,0);
-        this.cd2.setScale(0.1);
-        this.cd2text = this.add.text(window.innerWidth*0.25, window.innerHeight*0.95, "0%", {
+        this.cd2.setScale(0.4);
+        this.cd2text = this.add.text(window.innerWidth*0.1+150, window.innerHeight*0.95, "0%", {
             fontFamily: '"Verdana"',
             fontSize: "24px",
             strokeThickness: 1
@@ -257,6 +235,30 @@ class Intro extends Phaser.Scene {
                 setTimeout(function () {
                     that.pointerLocked = false;
                 }.bind(that), 100);
+            });
+        } else {
+            this.input.on('pointermove', function (event) {
+                that.pointerPosition = {x: event.worldX, y: event.worldY};
+
+                if (!that.me) return;
+                let dir = new Phaser.Math.Vector2(event.worldX - that.me.body.x, event.worldY - that.me.body.y).normalize();
+                let angle = Math.atan2(dir.y, dir.x) * 180 / Math.PI + 90;
+                that.me.probe.angle = angle;
+
+                // Limit pointer move request
+                if (that.pointerLocked) return;
+                socket.emit("DIRECT", { id: that.meData.id, direction: dir, rotation: angle });
+                that.pointerLocked = true;
+                setTimeout(function () {
+                    this.pointerLocked = false;
+                }.bind(that), 100);
+            });
+            this.input.on('pointerdown', function(pointer){
+                if (pointer.rightButtonDown()) {
+                    socket.emit("JUMP", { id: that.meData.id});
+                } else {
+                    socket.emit("FIRE", { id: that.meData.id});
+                }
             });
         }
 
@@ -664,5 +666,3 @@ return (('ontouchstart' in window) ||
     (navigator.maxTouchPoints > 0) ||
     (navigator.msMaxTouchPoints > 0));
 }
-
-alert(isTouchDevice());

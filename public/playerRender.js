@@ -39,7 +39,7 @@ class PlayerBaseRender {
       emitter.startFollow(this.body);
       this.emitterAcc.startFollow(this.body);
 
-      infoBody.add(namePlate);
+      infoBody.add([namePlate]);
       this.body.add([this.probe, infoBody]);
       base.add([this.body, this.particles]);
     }
