@@ -2,6 +2,7 @@ class PlayerBaseRender {
     constructor(data, scene, base, isMe) {
       this.data = data;
       this.isMe = isMe;
+      this.scene = scene;
       this.body = scene.add.container(data.x, data.y);
       this.probe = scene.add.sprite(0, 0, 'ufo');
       this.probe.name = data.id;
@@ -29,25 +30,81 @@ class PlayerBaseRender {
      });
 
       let infoBody = scene.add.container(0, 0);
-      let namePlate = scene.add.text(0, -40, data.data.name || "Guest", {
+      let namePlate = scene.add.text(0, -50, data.data.name || "Guest", {
           fontFamily: '"Verdana"',
           strokeThickness: 1
       });
       namePlate.setAlpha(0.8);
       namePlate.setOrigin(0.5);
+      let health1 = scene.add.rectangle(0, -35, 70, 10, 0x000000);
+      this.health2 = scene.add.rectangle(0, -35, 70, 10, 0x00B403);
 
       emitter.startFollow(this.body);
       this.emitterAcc.startFollow(this.body);
 
-      infoBody.add([namePlate]);
+      infoBody.add([namePlate, health1, this.health2]);
       this.body.add([this.probe, infoBody]);
       base.add([this.body, this.particles]);
     }
   
     update(data) {
+      const lerpColor = function(a, b, amount) {
+          const ar = a >> 16,
+                ag = a >> 8 & 0xff,
+                ab = a & 0xff,
+      
+                br = b >> 16,
+                bg = b >> 8 & 0xff,
+                bb = b & 0xff,
+      
+                rr = ar + amount * (br - ar),
+                rg = ag + amount * (bg - ag),
+                rb = ab + amount * (bb - ab);
+    
+          return (rr << 16) + (rg << 8) + (rb | 0);
+      };
+
       this.body.x = data.x;
       this.body.y = data.y;
-      this.data = data;
+
+
+      this.health2.width = (data.data.health/data.data.healthFull)*70;
+      this.health2.fillColor = lerpColor(0x990000, 0x00B403, data.data.health/data.data.healthFull);
+      if (this.data.data.health > data.data.health) {
+        this.scene.tweens.add({
+          targets: this.body,
+          alpha: 0.5,
+          paused: false,
+          yoyo: true,
+          duration: 200,
+          repeat: 5,
+          scale: 1.1
+        });
+      }
+
+      if (!this.data.data.boost1 && data.data.boost1) {
+        let text = this.scene.add.text(this.body.x, this.body.y, "Enhanced Laser!", {
+            fontFamily: '"Verdana"',
+            fontSize: "24px",
+            strokeThickness: 1
+        });
+        text.setAlpha(0.8);
+        text.setOrigin(0.5);
+        this.scene.baseContainer.add([text]);
+        let tween = this.scene.tweens.add({
+            targets: text,
+            alpha: 0.5,
+            paused: false,
+            yoyo: true,
+            duration: 300,
+            scale: 1.2,
+            repeat: 3,
+            onComplete: function () {
+              text.destroy();
+            }
+        });
+      }
+
       if (!this.isMe) {
         this.probe.angle = data.data?.angle || 0;
       }
@@ -56,6 +113,7 @@ class PlayerBaseRender {
       } else {
         this.emitterAcc.visible = false;
       }
+      this.data = data;
     }
   
     destroy(scene) {
@@ -87,7 +145,7 @@ class PlayerBaseRender {
     makeExplosionEffect(scene) {
       let particles = scene.add.particles('flares');
       let emitter = particles.createEmitter({
-          frame: 'red',
+          frame: 'blue',
           lifespan: 2000,
           speed: 40,
           scale: { start: 0.3, end: 0 },

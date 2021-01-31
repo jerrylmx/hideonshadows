@@ -18,8 +18,11 @@ http.listen(port, () => console.log(`Server running on port ${port}!`));
 
 const TICK_RATE = 50;
 const WORLD_SCALE = 2000;
-const CD1 = 50;
-const CD2 = 25;
+const CD1 = 10;
+const CD2 = 10;
+
+const CD3 = 100;
+const CD4 = 100;
 const EVENTS = {
     JOIN: "JOIN",
     JOINACK: "JOINACK",
@@ -46,7 +49,7 @@ io.on('connection', (socket) => {
 
     socket.on(EVENTS.JOIN, (data) => {
         // Register
-        let pos = getRandomSpawnPosition();
+        let pos = {x: 200, y: 200} // getRandomSpawnPosition();
         let geom = new Circle({
             id: socket.id,
             x: pos.x,
@@ -58,7 +61,11 @@ io.on('connection', (socket) => {
             data: {
                 type: 'player',
                 name: data.name,
-                cd1: CD1
+                cd1: CD1,
+                cd2: CD2,
+                cd3: 0,
+                health: 100,
+                healthFull: 100,
             }
         });
         engine.addEntity(geom);
@@ -131,8 +138,8 @@ io.on('connection', (socket) => {
             let geom = new Circle({
                 id: socket.id + bid,
                 ttl: 200,
-                x: entity.x,
-                y: entity.y,
+                x: entity.x + dir.x*10,
+                y: entity.y + dir.y*10,
                 m: 1,
                 v: {x:0,y:0},
                 r: 8,
@@ -140,23 +147,35 @@ io.on('connection', (socket) => {
                 percise: true,
                 data: {
                     type: 'bullet',
+                    boost: entity.data.boost1,
                     angle: Math.atan2(dir.y, dir.x) * 180/Math.PI + 90 // entity.data.angle Math.atan2(dir)
                 },
                 onCollide: function(target) {
                     // Remove dead player if any
                     if (clients[target.id]) {
-                        engine.removeEntityRuntime(target);
-                        clients[target.id].emit(EVENTS.OUT, {who: entity});
-                        clients[data.id].emit(EVENTS.SCORE, {who: entity});
+                        target.data.health -= 34;
+                        if (target.data.health <= 0) {
+                            engine.removeEntityRuntime(target);
+                            clients[target.id].emit(EVENTS.OUT, {who: entity});
+                            clients[data.id].emit(EVENTS.SCORE, {who: entity});
+                        }
                     }
-                    engine.removeEntityRuntime(geom);
+                    engine.removeEntityRuntime(this);
                 },
                 ignoreIf: function(target) {
-                    return target.id === data.id;
+                    if (entity.data.boost1) {
+                        return (!clients[target.id] && !target.data.isWall) || target.id === data.id;
+                    } else {
+                        return target.id === data.id;
+                    }
                 }
             });
             engine.addEntity(geom);
-            engine.applyForce(geom, Util.vMul(dir, 5000));
+            if (entity.data.boost1) {
+                engine.applyForce(geom, Util.vMul(dir, 5000));
+            } else {
+                engine.applyForce(geom, Util.vMul(dir, 3500));
+            }
         }
     });
 
@@ -179,10 +198,10 @@ let engine = new Engine({
 });
 
 // Wall
-engine.addEntity(new Rect({data: {type: 'object'}, eternal: true, static: true, id: 'wall_bot', x: WORLD_SCALE/2, y: WORLD_SCALE-100, w: WORLD_SCALE-165, h: 30, m: 100000}));
-engine.addEntity(new Rect({data: {type: 'object'}, eternal: true, static: true, id: 'wall_top', x: WORLD_SCALE/2, y: 100, w: WORLD_SCALE-165, h: 30, m: 100000}));
-engine.addEntity(new Rect({data: {type: 'object'}, eternal: true, static: true, id: 'wall_left', x: 100, y: WORLD_SCALE/2, w: 30, h: WORLD_SCALE-165, m: 100000}));
-engine.addEntity(new Rect({data: {type: 'object'}, eternal: true, static: true, id: 'wall_right', x: WORLD_SCALE-100, y: WORLD_SCALE/2, w: 30, h: WORLD_SCALE-165, m: 100000}));
+engine.addEntity(new Rect({data: {type: 'object', isWall: true}, eternal: true, static: true, id: 'wall_bot', x: WORLD_SCALE/2, y: WORLD_SCALE-100, w: WORLD_SCALE-165, h: 30, m: 100000}));
+engine.addEntity(new Rect({data: {type: 'object', isWall: true}, eternal: true, static: true, id: 'wall_top', x: WORLD_SCALE/2, y: 100, w: WORLD_SCALE-165, h: 30, m: 100000}));
+engine.addEntity(new Rect({data: {type: 'object', isWall: true}, eternal: true, static: true, id: 'wall_left', x: 100, y: WORLD_SCALE/2, w: 30, h: WORLD_SCALE-165, m: 100000}));
+engine.addEntity(new Rect({data: {type: 'object', isWall: true}, eternal: true, static: true, id: 'wall_right', x: WORLD_SCALE-100, y: WORLD_SCALE/2, w: 30, h: WORLD_SCALE-165, m: 100000}));
 
 // Objects
 let blk1 = [
@@ -196,24 +215,65 @@ let blk2 = [
     {x: 570, y: 1350}
 ]
 let blk3 = [
-    {x: 1551, y: 1259}, 
+    {x: 1451, y: 1259}, 
     {x: 1090, y: 1612},
-    {x: 1796, y: 1700}
+    {x: 1600, y: 1612}
 ]
 let blk4 = [
     {x: 1023, y: 952}, 
     {x: 1366, y: 850},
-    {x: 1555, y: 1144},
-    {x: 1324, y: 1200},
-    {x: 911, y: 1231}
+    {x: 1555, y: 1144}
+]
+let blk6 = [
+    {x: 500, y: 500}, 
+    {x: 600, y: 300},
+    {x: 900, y: 500}
 ]
 
 
-engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk1', vertices:blk1,  m: 100000}));
-engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk2', vertices:blk2,  m: 100000}));
+
+// engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk1', vertices:blk1,  m: 100000}));
+// engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk2', vertices:blk2,  m: 100000}));
 engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk3', vertices:blk3,  m: 100000}));
 engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk4', vertices:blk4,  m: 100000}));
+engine.addEntity(new RegPoly({data: {type: 'object'}, eternal: true, static: true, id: 'blk1', m: 100000, sides: 6, x: 1300, y: 500, r: 200}));
+engine.addEntity(new Rect({data: {type: 'object'}, eternal: true, static: true, id: 'blk5', m: 100000, w: 20, h: 400, x: 570, y: 300}));
+engine.addEntity(new Rect({data: {type: 'object'}, eternal: true, static: true, id: 'blk6', m: 100000, w: 335, h: 50, x: 600, y: 515}));
+engine.addEntity(new Rect({data: {type: 'object'}, eternal: true, static: true, id: 'blk7', m: 100000, w: 500, h: 80, x: 515, y: 710}));
+engine.addEntity(new Rect({data: {type: 'object'}, eternal: true, static: true, id: 'blk8', m: 100000, w: 80, h: 80, x: 150, y: 710}));
+engine.addEntity(new Rect({data: {type: 'object'}, eternal: true, static: true, id: 'blk9', m: 100000, w: 200, h: 200, x: 500, y: 1400}));
 
+engine.addEntity(new Rect({data: {type: 'chest', template: 'chest1'}, static: true, eternal: true, id: 'c1', m: 10, w: 40, h: 45, x: 1200, y: 1200}));
+engine.addEntity(new Rect({data: {type: 'chest', template: 'chest1'}, static: true, eternal: true, id: 'c2', m: 20, w: 40, h: 45, x: 1250, y: 1200}));
+engine.addEntity(new Rect({data: {type: 'chest', template: 'chest1'}, static: true, eternal: true, id: 'c3', m: 30, w: 40, h: 45, x: 1200, y: 1250}));
+engine.addEntity(new Rect({data: {type: 'chest', template: 'chest1'}, static: true, eternal: true, id: 'c4', m: 30, w: 40, h: 45, x: 1200, y: 1250}));
+
+
+for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 3; j++) {
+        let x = 600 + i * 50;
+        let y = 1000 + j * 50;
+        engine.addEntity(new Rect({data: {type: 'chest', template: 'chest3'}, static: true, eternal: true, id: 'c'+Math.random(), m: 30, w: 40, h: 40, x: x, y: y}));
+    }
+}
+
+for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+        let x = 600 + i * 50;
+        let y = 1600 + j * 50;
+        engine.addEntity(new Rect({data: {type: 'chest', template: 'chest2'}, static: true, eternal: true, id: 'c'+Math.random(), m: 30, w: 40, h: 40, x: x, y: y}));
+    }
+}
+
+for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+        let x = 1600 + i * 50;
+        let y = 600 + j * 50;
+        engine.addEntity(new Rect({data: {type: 'chest', template: 'chest4'}, static: true, eternal: true, id: 'c'+Math.random(), m: 30, w: 40, h: 40, x: x, y: y}));
+    }
+}
+
+// engine.addEntity(new Rect({data: {type: 'chest', template: 'med1'}, id: 'c4', m: 30, w: 40, h: 40, x: 1200, y: 1250}));
 
 
 // Stable interval solution from stackoverflow
@@ -224,6 +284,15 @@ let tick = function() {
       if (entity) {
         entity.data.cd1--;
         entity.data.cd2--;
+
+        if (entity.data.cd3 > 0) {
+            entity.data.cd3--;
+        } else {
+            entity.data.cd3 = 0;
+            entity.data.boost1 = false;
+        }
+
+
       }
       clients[id].emit(EVENTS.SYNC, {
         time: new Date().getTime(),
@@ -231,6 +300,46 @@ let tick = function() {
       });
     });
 }
+
+// Spawn loop
+setInterval(() => {
+    let rand = Math.random() * 10;
+    let pos = getRandomSpawnPosition();
+    if (rand < 3) {
+        engine.addEntity(new Rect({
+            ttl: 200, data: {scale: 0.1, type: 'chest', template: 'consume1', consume: true}, id: 'c' + Math.random(), m: 10, w: 40, h: 40, x: pos.x, y: pos.y,
+            onCollide: function(target) {
+                // Remove dead player if any
+                if (clients[target.id]) {
+                    target.data.boost1 = true;
+                    target.data.cd3 = CD3;
+                    engine.removeEntityRuntime(this);
+                }
+            }
+        }));
+    } else if (rand < 6) {
+        engine.addEntity(new Rect({
+            ttl: 200, data: {scale: 0.1, type: 'chest', template: 'consume2', consume: true}, id: 'c' + Math.random(), m: 10, w: 40, h: 40, x: pos.x, y: pos.y,
+            onCollide: function(target) {
+                // Remove dead player if any
+                if (clients[target.id]) {
+                    engine.removeEntityRuntime(this);
+                }
+            }
+        }));
+    } else {
+        engine.addEntity(new Rect({
+            ttl: 200, data: {scale: 0.25, type: 'chest', template: 'med1', consume: true}, id: 'c' + Math.random(), m: 10, w: 40, h: 40, x: pos.x, y: pos.y,
+            onCollide: function(target) {
+                // Remove dead player if any
+                if (clients[target.id]) {
+                    target.data.health = Math.min(target.data.healthFull, target.data.health + 25);
+                    engine.removeEntityRuntime(this);
+                }
+            }
+        }));
+    }
+}, 5000)
 
 let tickLengthMs = TICK_RATE
 let previousTick = Date.now();

@@ -10,8 +10,8 @@ class ObjectBaseRender {
 
       this.graphics = scene.add.graphics({ x: 0, y: 0 });
 
-      this.graphics.lineStyle(10, 0xa83232, 0.9);
-      this.graphics.fillStyle(0xa83232, 0.8);
+      this.graphics.lineStyle(20, 0x6f7b83, 1);
+      this.graphics.fillStyle(0x6f7b83, 0.8);
       this.graphics.beginPath();
       this.graphics.moveTo(polygon.points[0].x, polygon.points[0].y);
 

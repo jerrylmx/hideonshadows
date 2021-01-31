@@ -8,9 +8,32 @@ class Intro extends Phaser.Scene {
 
     preload () {
         this.load.image('bg', './assets/bk.png');
+        this.load.image('floor1', './assets/floor1.png');
+        this.load.image('floor2', './assets/floor2.png');
+        this.load.image('floor3', './assets/floor3.png');
+        this.load.image('floor4', './assets/floor4.png');
+
+        this.load.image('wall1', './assets/wall1.png');
+        this.load.image('wall2', './assets/wall2.png');
+        this.load.image('wall3', './assets/wall3.png');
+        this.load.image('wall-thin-1', './assets/wall-thin-1.png');
+        this.load.image('monitor1', './assets/monitor1.png');
+        this.load.image('med1', './assets/med1.png');
+        this.load.image('bridge1', './assets/bridge1.png');
+        this.load.image('hole', './assets/hole.png');
+        this.load.image('chest1', './assets/chest1.png');
+        this.load.image('chest2', './assets/chest2.png');
+        this.load.image('chest3', './assets/chest3.png');
+        this.load.image('chest4', './assets/chest4.png');
+        this.load.image('consume1', './assets/consume1.png');
+        this.load.image('consume2', './assets/consume2.png');
+
+
         this.load.image('ufo', './assets/ufo.png');
         this.load.image('mask', './assets/mask.png');
         this.load.image('bullet', './assets/bullet.png');
+        this.load.image('bullet2', './assets/bullet2.png');
+        this.load.image('bullet3', './assets/bullet3.png');
         this.load.image('cd1', './assets/cd1.png');
         this.load.image('cd2', './assets/cd2.png');
         this.load.image('trophy', './assets/trophy.png');
@@ -23,10 +46,12 @@ class Intro extends Phaser.Scene {
     create (data) {
         this.entities = {};
         this.baseContainer = this.make.container(0, 0);
-        //this.background = this.add.tileSprite(0, 0,  window.innerWidth, window.innerHeight, 'bg');
+        this.background = this.add.tileSprite(0, 0,  window.innerWidth, window.innerHeight, 'floor1');
         this.rt = this.make.renderTexture({width: window.innerWidth, height: window.innerHeight, add: false});
         this.rt.tint = 0x123456;
-        //this.baseContainer.add([this.background]);
+        this.baseContainer.add([this.background]);
+        this.fillScene();
+
         this.meData = null;
         this.fmanager = null;
         this.dmanager = null;
@@ -37,8 +62,8 @@ class Intro extends Phaser.Scene {
         this.cd2Full= data.cd2;
 
 
-        let rect = this.add.rectangle(1000, 1000, 2000, 2000, 0x273b44);
-        this.baseContainer.add([rect]);
+        // let rect = this.add.rectangle(1000, 1000, 2000, 2000, 0x273b44);
+        // this.baseContainer.add([rect]);
 
         window.entities = {};
         this.baseContainer.setMask(new Phaser.Display.Masks.BitmapMask(this, this.rt));
@@ -52,6 +77,8 @@ class Intro extends Phaser.Scene {
                 this.entities[entity.id] = new PlayerBaseRender(entity, this, this.baseContainer, this.meData.id === entity.id);
             } else if (entity.data.type === 'bullet') {
                 this.entities[entity.id] = new BulletBaseRender(entity, this, this.baseContainer);
+            } else if (entity.data.type === 'chest') {
+                this.entities[entity.id] = new ChestBaseRender(entity, this, this.baseContainer);
             } else {
                 this.entities[entity.id] = new ObjectBaseRender(entity, this, this.baseContainer);
             }
@@ -74,6 +101,8 @@ class Intro extends Phaser.Scene {
                     this.entities[entity.id] = new PlayerBaseRender(entity, this, this.baseContainer, this.meData.id === entity.id);
                 } else if (entity.data.type === 'bullet') {
                     this.entities[entity.id] = new BulletBaseRender(entity, this, this.baseContainer);
+                } else if (entity.data.type === 'chest') {
+                    this.entities[entity.id] = new ChestBaseRender(entity, this, this.baseContainer);
                 } else {
                     this.entities[entity.id] = new ObjectBaseRender(entity, this, this.baseContainer);
                 }
@@ -138,7 +167,7 @@ class Intro extends Phaser.Scene {
                 that.scene.transition({target: "Prompt", duration: 0});
                 location.reload();
                 $('#container').show();
-            }, 5000)
+            }, 5000);
         })
 
         // Controls
@@ -288,6 +317,48 @@ class Intro extends Phaser.Scene {
         return graphics;
     }
 
+    fillScene() {
+
+        for (let i = 0; i < 14; i++) {
+            this.add.sprite(175+(i*128), 40, 'wall2').setScale(0.5);
+            this.baseContainer.add([this.add.sprite(175+(i*128), 1880, 'wall-thin-1').setScale(0.5).setAngle(90)]);
+        }
+
+        // this.baseContainer.add([this.add.sprite(120, 180, 'wall-thin-1').setScale(0.5)]);
+    
+        // for (let i = 0; i < 14; i++) {
+        //     this.baseContainer.add([this.add.sprite(123, 180+(i*128), 'wall-thin-1').setScale(0.5)]);
+        //     // this.add.sprite(1890, 180+(i*128), 'wall-thin-1').setScale(0.5);
+        //     this.baseContainer.add([this.add.sprite(1881, 180+(i*128), 'wall-thin-1').setScale(0.5)]);
+        // }
+        
+
+        this.baseContainer.add([this.add.sprite(500, 500, 'med1').setScale(0.25)]);
+        this.baseContainer.add([this.add.sprite(700, 500, 'med1').setScale(0.25)]);
+        this.baseContainer.add([this.add.sprite(600, 600, 'med1').setScale(0.25)]);
+
+        this.baseContainer.add([this.add.sprite(600, 620, 'bridge1').setScale(1)]);
+
+
+        // this.baseContainer.add([this.add.sprite(896, 603, 'floor3').setScale(0.48)]);
+        // this.baseContainer.add([this.add.sprite(896+128*6, 603, 'floor3').setScale(0.48)]);
+        // this.baseContainer.add([this.add.sprite(896, 603+128*6, 'floor3').setScale(0.48)]);
+
+        // this.baseContainer.add([this.add.sprite(896+128*4, 603+128*6, 'floor4').setScale(0.48)]);
+        // this.baseContainer.add([this.add.sprite(896+128*-3, 603+128*3, 'floor4').setScale(0.48)]);
+        // this.baseContainer.add([this.add.sprite(896+128*5, 603+128*4, 'floor4').setScale(0.48)]);
+
+        // this.baseContainer.add([this.add.sprite(896+128*5, 603+128*4, 'floor4').setScale(0.48)]);
+
+        
+        // this.baseContainer.add([this.add.sprite(1000, 1000, 'hole').setScale(3)]);
+
+
+    //   this.baseContainer.add([this.add.sprite(128, 128, 'monitor1').setScale(0.5)]);
+    //   this.add.sprite(128, 128, 'monitor1').setScale(0.5)
+    //   this.baseContainer.add([this.add.sprite(1012, 500, 'wall3')]);
+    }
+
     update() {
         if (!this.meData || !this.fmanager || !this.dmanager || !this.fmanager.ready) return;
 
@@ -298,10 +369,10 @@ class Intro extends Phaser.Scene {
         });
 
         // Move background
-        // this.background.tilePositionX = this.me.body.x;
-        // this.background.tilePositionY = this.me.body.y;
-        // this.background.x = this.me.body.x;
-        // this.background.y = this.me.body.y;
+        this.background.tilePositionX = this.me.body.x;
+        this.background.tilePositionY = this.me.body.y;
+        this.background.x = this.me.body.x;
+        this.background.y = this.me.body.y;
 
         // Cast shadows
         this.rt.clear();
