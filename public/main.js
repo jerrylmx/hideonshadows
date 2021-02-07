@@ -8,6 +8,7 @@ class Intro extends Phaser.Scene {
 
     preload () {
         this.load.image('bg', './assets/bk.png');
+        this.load.image('floor0', './assets/floor0.png');
         this.load.image('floor1', './assets/floor1.png');
         this.load.image('floor2', './assets/floor2.png');
         this.load.image('floor3', './assets/floor3.png');
@@ -30,6 +31,8 @@ class Intro extends Phaser.Scene {
 
 
         this.load.image('ufo', './assets/ufo.png');
+        this.load.image('shadow', './assets/shadow.png');
+        this.load.image('arrow', './assets/arrow.png');
         this.load.image('mask', './assets/mask.png');
         this.load.image('bullet', './assets/bullet.png');
         this.load.image('bullet2', './assets/bullet2.png');
@@ -46,7 +49,7 @@ class Intro extends Phaser.Scene {
     create (data) {
         this.entities = {};
         this.baseContainer = this.make.container(0, 0);
-        this.background = this.add.tileSprite(0, 0,  window.innerWidth, window.innerHeight, 'floor1');
+        this.background = this.add.tileSprite(0, 0,  window.innerWidth, window.innerHeight, 'floor0');
         this.rt = this.make.renderTexture({width: window.innerWidth, height: window.innerHeight, add: false});
         this.rt.tint = 0x123456;
         this.baseContainer.add([this.background]);
@@ -94,23 +97,26 @@ class Intro extends Phaser.Scene {
         socket.on("SYNC", (data) => {
             if (!this.meData || !this.fmanager || !this.dmanager) return;
             this.fmanager.push(data.entities);
-            this.dmanager.refresh(data.entities);
-            this.diffs = this.dmanager.refDiff();
-            this.diffs.toAdd.forEach((entity) => {
-                if (entity.data.type === 'player') {
-                    this.entities[entity.id] = new PlayerBaseRender(entity, this, this.baseContainer, this.meData.id === entity.id);
-                } else if (entity.data.type === 'bullet') {
-                    this.entities[entity.id] = new BulletBaseRender(entity, this, this.baseContainer);
-                } else if (entity.data.type === 'chest') {
-                    this.entities[entity.id] = new ChestBaseRender(entity, this, this.baseContainer);
-                } else {
-                    this.entities[entity.id] = new ObjectBaseRender(entity, this, this.baseContainer);
-                }
-            });
-            this.diffs.toRemove.forEach((entity) => {
-                this.entities[entity.id].destroy(this);
-                delete this.entities[entity.id];
-            });
+
+            if (this.fmanager.ready) {
+                this.dmanager.refresh(this.fmanager.queue[(this.fmanager.top + 1) % this.fmanager.capacity].payload);
+                this.diffs = this.dmanager.refDiff();
+                this.diffs.toAdd.forEach((entity) => {
+                    if (entity.data.type === 'player') {
+                        this.entities[entity.id] = new PlayerBaseRender(entity, this, this.baseContainer, this.meData.id === entity.id);
+                    } else if (entity.data.type === 'bullet') {
+                        this.entities[entity.id] = new BulletBaseRender(entity, this, this.baseContainer);
+                    } else if (entity.data.type === 'chest') {
+                        this.entities[entity.id] = new ChestBaseRender(entity, this, this.baseContainer);
+                    } else {
+                        this.entities[entity.id] = new ObjectBaseRender(entity, this, this.baseContainer);
+                    }
+                });
+                this.diffs.toRemove.forEach((entity) => {
+                    this.entities[entity.id].destroy(this);
+                    delete this.entities[entity.id];
+                }); 
+            }
         });
 
 
@@ -124,7 +130,7 @@ class Intro extends Phaser.Scene {
             });
             text1.setAlpha(0.8);
             text1.setOrigin(0.5);
-            text1.setDepth(100);
+            text1.setDepth(111);
             let tween = this.tweens.add({
                 targets: text1,
                 alpha: 0.2,
@@ -147,6 +153,7 @@ class Intro extends Phaser.Scene {
             });
             text1.setAlpha(0.8);
             text1.setOrigin(0.5);
+            text1.setDepth(111);
             let text2 = this.add.text(this.me.data.x, this.me.data.y+80, "(Game restarting in 5 seconds)", {
                 fontFamily: '"Verdana"',
                 fontSize: "24px",
@@ -154,6 +161,7 @@ class Intro extends Phaser.Scene {
             });
             text2.setAlpha(0.8);
             text2.setOrigin(0.5);
+            text2.setDepth(111);
             var that = this;
             let tween = this.tweens.add({
                 targets: text2,
@@ -230,6 +238,15 @@ class Intro extends Phaser.Scene {
         }, this)
 
 
+        this.leaders = this.add.text(window.innerWidth*0.05, window.innerHeight*0.05, "Leader Board", {
+            fontFamily: '"Verdana"',
+            fontSize: "16px",
+            strokeThickness: 1
+        });
+        this.leaders.setDepth(111);
+        this.leaders.setScrollFactor(0,0);
+
+
         if (isTouchDevice()) {
             let base = this.add.image(0,0, 'base');
             base.setAlpha(0.2);
@@ -255,7 +272,7 @@ class Intro extends Phaser.Scene {
                 console.log(angle);
                 let dir = {x: 0, y: 1};
                 dir = mRot(angle * Math.PI/180, dir);
-                that.me.probe.angle = angle;
+                that.me.probeBody.angle = angle;
     
                 // Limit pointer move request
                 if (that.pointerLocked) return;
@@ -272,7 +289,7 @@ class Intro extends Phaser.Scene {
                 if (!that.me) return;
                 let dir = new Phaser.Math.Vector2(event.worldX - that.me.body.x, event.worldY - that.me.body.y).normalize();
                 let angle = Math.atan2(dir.y, dir.x) * 180 / Math.PI + 90;
-                that.me.probe.angle = angle;
+                that.me.probeBody.angle = angle;
 
                 // Limit pointer move request
                 if (that.pointerLocked) return;
@@ -304,7 +321,7 @@ class Intro extends Phaser.Scene {
         })
         let polygon = new Phaser.Geom.Polygon(pts);
         var graphics = this.make.graphics();
-        graphics.fillStyle(0x00aa00, 0.8);
+        graphics.fillStyle(0x00aa00, 1);
         graphics.beginPath();
         graphics.moveTo(polygon.points[0].x, polygon.points[0].y);
 
@@ -318,45 +335,7 @@ class Intro extends Phaser.Scene {
     }
 
     fillScene() {
-
-        for (let i = 0; i < 14; i++) {
-            this.add.sprite(175+(i*128), 40, 'wall2').setScale(0.5);
-            this.baseContainer.add([this.add.sprite(175+(i*128), 1880, 'wall-thin-1').setScale(0.5).setAngle(90)]);
-        }
-
-        // this.baseContainer.add([this.add.sprite(120, 180, 'wall-thin-1').setScale(0.5)]);
-    
-        // for (let i = 0; i < 14; i++) {
-        //     this.baseContainer.add([this.add.sprite(123, 180+(i*128), 'wall-thin-1').setScale(0.5)]);
-        //     // this.add.sprite(1890, 180+(i*128), 'wall-thin-1').setScale(0.5);
-        //     this.baseContainer.add([this.add.sprite(1881, 180+(i*128), 'wall-thin-1').setScale(0.5)]);
-        // }
-        
-
-        this.baseContainer.add([this.add.sprite(500, 500, 'med1').setScale(0.25)]);
-        this.baseContainer.add([this.add.sprite(700, 500, 'med1').setScale(0.25)]);
-        this.baseContainer.add([this.add.sprite(600, 600, 'med1').setScale(0.25)]);
-
         this.baseContainer.add([this.add.sprite(600, 620, 'bridge1').setScale(1)]);
-
-
-        // this.baseContainer.add([this.add.sprite(896, 603, 'floor3').setScale(0.48)]);
-        // this.baseContainer.add([this.add.sprite(896+128*6, 603, 'floor3').setScale(0.48)]);
-        // this.baseContainer.add([this.add.sprite(896, 603+128*6, 'floor3').setScale(0.48)]);
-
-        // this.baseContainer.add([this.add.sprite(896+128*4, 603+128*6, 'floor4').setScale(0.48)]);
-        // this.baseContainer.add([this.add.sprite(896+128*-3, 603+128*3, 'floor4').setScale(0.48)]);
-        // this.baseContainer.add([this.add.sprite(896+128*5, 603+128*4, 'floor4').setScale(0.48)]);
-
-        // this.baseContainer.add([this.add.sprite(896+128*5, 603+128*4, 'floor4').setScale(0.48)]);
-
-        
-        // this.baseContainer.add([this.add.sprite(1000, 1000, 'hole').setScale(3)]);
-
-
-    //   this.baseContainer.add([this.add.sprite(128, 128, 'monitor1').setScale(0.5)]);
-    //   this.add.sprite(128, 128, 'monitor1').setScale(0.5)
-    //   this.baseContainer.add([this.add.sprite(1012, 500, 'wall3')]);
     }
 
     update() {
@@ -364,7 +343,8 @@ class Intro extends Phaser.Scene {
 
         // Entities with interpolated positions
         let entities = this.fmanager.pop();
-        this.diffs.toUpdate.forEach((entity) => {
+
+        this.diffs && this.diffs.toUpdate.forEach((entity) => {
             this.entities[entity.id].update(entities[entity.id], this);
         });
 
@@ -488,6 +468,10 @@ const config = {
     // pixelArt: true,
     scene: [GameScenePrompt, Intro],
     parent: "game",
+    disableContextMenu: true,
+    fps: {
+        smoothStep: true
+    }
     // antialias: true
 };
 const game = new Phaser.Game(config);
@@ -500,17 +484,17 @@ function makeSightPolygon(me, entities) {
     let solutions = [];
     let mePt = {x: me.x, y: me.y};
     let polys = [];
-    let bb = {
+    let boundary = {
         vertices: [
-            {x: mePt.x - window.innerWidth/2, y: mePt.y - window.innerHeight/2},
-            {x: mePt.x + window.innerWidth/2, y: mePt.y - window.innerHeight/2},
-            {x: mePt.x + window.innerWidth/2, y: mePt.y + window.innerHeight/2},
-            {x: mePt.x - window.innerWidth/2, y: mePt.y + window.innerHeight/2}
+            {x: 0, y: 0},
+            {x: 2000, y: 0},
+            {x: 2000, y: 2000},
+            {x: 0, y: 2000}
         ],
         x: 0,
         y: 0
     }
-    // polys.push(bb);
+    // polys.push(boundary);
     for (let key in entities) {
         if (entities[key].data.data.type === "object"){// && !entities[key].data.id.includes('wall')) {
             polys.push(entities[key].data);
@@ -669,13 +653,13 @@ function distSq(bodyA, bodyB) {
 }
 
 function isInDomain(pt1, pt2, pt) {
-    pt1 = vRound(pt1);
-    pt2 = vRound(pt2);
-    pt = vRound(pt);
-    let xlo = Math.min(pt1.x, pt2.x);
-    let xhi = Math.max(pt1.x, pt2.x);
-    let ylo = Math.min(pt1.y, pt2.y);
-    let yhi = Math.max(pt1.y, pt2.y);
+    // pt1 = vRound(pt1);
+    // pt2 = vRound(pt2);
+    // pt = vRound(pt);
+    let xlo = Math.min(pt1.x, pt2.x) - 0.01;
+    let xhi = Math.max(pt1.x, pt2.x) + 0.01;
+    let ylo = Math.min(pt1.y, pt2.y) - 0.01;
+    let yhi = Math.max(pt1.y, pt2.y) + 0.01;
     return pt.x >= xlo && pt.x <= xhi && pt.y >= ylo && pt.y <= yhi;
 }
 

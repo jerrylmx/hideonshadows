@@ -231,9 +231,6 @@ let blk6 = [
 ]
 
 
-
-// engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk1', vertices:blk1,  m: 100000}));
-// engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk2', vertices:blk2,  m: 100000}));
 engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk3', vertices:blk3,  m: 100000}));
 engine.addEntity(new Polygon({data: {type: 'object'}, eternal: true, static: true, id: 'blk4', vertices:blk4,  m: 100000}));
 engine.addEntity(new RegPoly({data: {type: 'object'}, eternal: true, static: true, id: 'blk1', m: 100000, sides: 6, x: 1300, y: 500, r: 200}));
@@ -249,29 +246,29 @@ engine.addEntity(new Rect({data: {type: 'chest', template: 'chest1'}, static: tr
 engine.addEntity(new Rect({data: {type: 'chest', template: 'chest1'}, static: true, eternal: true, id: 'c4', m: 30, w: 40, h: 45, x: 1200, y: 1250}));
 
 
-for (let i = 0; i < 5; i++) {
-    for (let j = 0; j < 3; j++) {
-        let x = 600 + i * 50;
-        let y = 1000 + j * 50;
-        engine.addEntity(new Rect({data: {type: 'chest', template: 'chest3'}, static: true, eternal: true, id: 'c'+Math.random(), m: 30, w: 40, h: 40, x: x, y: y}));
-    }
-}
+// for (let i = 0; i < 4; i++) {
+//     for (let j = 0; j < 2; j++) {
+//         let x = 600 + i * 50;
+//         let y = 1000 + j * 50;
+//         engine.addEntity(new Rect({data: {type: 'chest', template: 'chest3'}, static: true, eternal: true, id: 'c'+Math.random(), m: 30, w: 40, h: 40, x: x, y: y}));
+//     }
+// }
 
-for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-        let x = 600 + i * 50;
-        let y = 1600 + j * 50;
-        engine.addEntity(new Rect({data: {type: 'chest', template: 'chest2'}, static: true, eternal: true, id: 'c'+Math.random(), m: 30, w: 40, h: 40, x: x, y: y}));
-    }
-}
+// for (let i = 0; i < 3; i++) {
+//     for (let j = 0; j < 3; j++) {
+//         let x = 600 + i * 50;
+//         let y = 1600 + j * 50;
+//         engine.addEntity(new Rect({data: {type: 'chest', template: 'chest2'}, static: true, eternal: true, id: 'c'+Math.random(), m: 30, w: 40, h: 40, x: x, y: y}));
+//     }
+// }
 
-for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-        let x = 1600 + i * 50;
-        let y = 600 + j * 50;
-        engine.addEntity(new Rect({data: {type: 'chest', template: 'chest4'}, static: true, eternal: true, id: 'c'+Math.random(), m: 30, w: 40, h: 40, x: x, y: y}));
-    }
-}
+// for (let i = 0; i < 3; i++) {
+//     for (let j = 0; j < 3; j++) {
+//         let x = 1600 + i * 50;
+//         let y = 600 + j * 50;
+//         engine.addEntity(new Rect({data: {type: 'chest', template: 'chest4'}, static: true, eternal: true, id: 'c'+Math.random(), m: 30, w: 40, h: 40, x: x, y: y}));
+//     }
+// }
 
 // engine.addEntity(new Rect({data: {type: 'chest', template: 'med1'}, id: 'c4', m: 30, w: 40, h: 40, x: 1200, y: 1250}));
 

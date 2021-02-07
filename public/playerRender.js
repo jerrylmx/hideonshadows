@@ -4,10 +4,29 @@ class PlayerBaseRender {
       this.isMe = isMe;
       this.scene = scene;
       this.body = scene.add.container(data.x, data.y);
+      this.probeBody = scene.add.container(0, 0);
+
+      let shadow = scene.add.sprite(0, 0, 'shadow');
+      shadow.name = data.id + 'shadow';
+      shadow.depth = 10;
+      shadow.alpha = 0.2;
+      shadow.setScale(0.51);
+
+
       this.probe = scene.add.sprite(0, 0, 'ufo');
       this.probe.name = data.id;
       this.probe.depth = 10;
       this.probe.setScale(0.5);
+      this.probeBody.add([shadow, this.probe]);
+
+      if (isMe) {
+        this.arrow = scene.add.sprite(0, -100, 'arrow');
+        this.arrow.name = data.id + 'arrow';
+        this.arrow.depth = 10;
+        this.arrow.alpha = 0.4;
+        this.arrow.setScale(0.2);
+        this.probeBody.add([this.arrow]);
+      }
 
       this.particles = scene.add.particles('flares');
       let emitter = this.particles.createEmitter({
@@ -43,7 +62,7 @@ class PlayerBaseRender {
       this.emitterAcc.startFollow(this.body);
 
       infoBody.add([namePlate, health1, this.health2]);
-      this.body.add([this.probe, infoBody]);
+      this.body.add([this.probeBody, infoBody]);
       base.add([this.body, this.particles]);
     }
   

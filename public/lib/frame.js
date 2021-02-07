@@ -8,7 +8,7 @@ class FrameManager {
       this.queue = [];
 
       // Queue size. Longer queue means more stability but also more latency
-      this.capacity = 2;
+      this.capacity = 4;
 
       // Next slot
       this.top = 0;
@@ -42,12 +42,13 @@ class FrameManager {
     this.top++;
   }
 
-  // x0 ----- x2 latest
+  // x1, x2, . . ., xnew, x1
   pop() {
-    let x2 = this.queue[(this.top - 1 + this.capacity) % this.capacity];
-    let x1 = this.queue[(this.top - 2 + this.capacity) % this.capacity];
+    let xnew = this.queue[(this.top - 1 + this.capacity) % this.capacity];
+    let x2 = this.queue[(this.top + 1) % this.capacity];
+    let x1 = this.queue[(this.top + 0) % this.capacity];
 
-    let res = clone(x1).payload;
+    let res = {...x1.payload};
     if (!this.enabled) return res;
     for (let i = 0; i < Object.keys(x2.payload).length; i++) {
         let key = Object.keys(x2.payload)[i];
@@ -59,11 +60,13 @@ class FrameManager {
             continue;
         } else {
             let gap = this.rate;
-            let r = (new Date().getTime() - x2.time) / gap;
+            let r = (new Date().getTime() - xnew.time) / gap;
             let dx = ref1.x - ref0.x;
             let dy = ref1.y - ref0.y;
+            let da = ref1.data.angle - ref0.data.angle;
             res[key].x = ref0.x + dx * r;
             res[key].y = ref0.y + dy * r;
+            res[key].data.angle = res[key].data.angle + da * r;
         }
     }
     return res;
