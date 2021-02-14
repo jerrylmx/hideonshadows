@@ -16,7 +16,7 @@ app.get("/", function (req, res) {
 });
 http.listen(port, () => console.log(`Server running on port ${port}!`));
 
-const TICK_RATE = 50;
+const TICK_RATE = 30;
 const WORLD_SCALE = 2000;
 const CD1 = 10;
 const CD2 = 10;
@@ -336,7 +336,7 @@ setInterval(() => {
             }
         }));
     }
-}, 5000)
+}, 5000);
 
 let tickLengthMs = TICK_RATE
 let previousTick = Date.now();

@@ -8,7 +8,7 @@ class FrameManager {
       this.queue = [];
 
       // Queue size. Longer queue means more stability but also more latency
-      this.capacity = 4;
+      this.capacity = 2;
 
       // Next slot
       this.top = 0;
